@@ -6,6 +6,7 @@ const express      = require('express');
 const mongoose     = require('mongoose');
 const logger       = require('morgan');
 const path         = require('path');
+const cors         = require('cors');
 
 
 mongoose.Promise = Promise;
@@ -28,5 +29,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Allow Cross-Origin Resource Sharing (API requests from other domains)
+app.use(cors({
+  credentials: true,
+  origin: ["http://localhost:4200"]
+}));
+
+
+const phoneRouter = require("./routes/phone-router.js");
+app.use("/api", phoneRouter);
+
 
 module.exports = app;
