@@ -7,7 +7,10 @@ const mongoose     = require('mongoose');
 const logger       = require('morgan');
 const path         = require('path');
 const cors         = require('cors');
+const session      = require('express-session');
+const MongoStore   = require('connect-mongo')(session);
 
+const passportSetup = require("./passport/setup.js");
 
 mongoose.Promise = Promise;
 mongoose
@@ -32,13 +35,27 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Allow Cross-Origin Resource Sharing (API requests from other domains)
 app.use(cors({
+  // receive cookies from other domains
   credentials: true,
+  // these are the domains I want cookies (or any requests) from
   origin: ["http://localhost:4200"]
 }));
+// Session setup should come after the CORS setup
+app.use(session({
+  secret: "blah blah blah",
+  saveUninitialized: true,
+  resave: true,
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
+}));
+// Passport setup should come after SESSION setup
+passportSetup(app);
 
 
 const phoneRouter = require("./routes/phone-router.js");
 app.use("/api", phoneRouter);
+
+const authRouter = require("./routes/auth-router.js");
+app.use("/api", authRouter);
 
 
 module.exports = app;
